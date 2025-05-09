@@ -6,6 +6,7 @@ import { QueueModule } from './common/queue/queue.module';
 import { AppService } from './app.service';
 import { PatientsModule } from './patients/patients.module';
 import { AppointmentsModule } from './appointments/appointments.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AppointmentsModule } from './appointments/appointments.module';
     }),
     DatabaseModule,
     QueueModule,
+    MulterModule.register(),
     PatientsModule,
     AppointmentsModule,
   ],

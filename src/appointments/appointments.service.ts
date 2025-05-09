@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Appointment } from './entities/appointment.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
+import * as csv from 'csv-parser';
+import { Readable } from 'stream';
 
 @Injectable()
 export class AppointmentsService {
@@ -12,8 +14,23 @@ export class AppointmentsService {
     @InjectModel(Appointment.name)
     private appointmentModel: Model<Appointment>,
     @InjectQueue('appointments')
-    private appointmentsQueue: Queue,
-  ) {}
+    private readonly appointmentsQueue: Queue,
+  ) {
+    this.appointmentsQueue.on('ready', () => {
+      console.log('Queue is ready');
+    });
+    this.appointmentsQueue.on('completed', (job) => {
+      console.log(`Job ${job.id} completed`);
+    });
+    
+    this.appointmentsQueue.on('failed', (job, err) => {
+      console.error(`Job ${job.id} failed:`, err);
+    });
+    
+    this.appointmentsQueue.on('error', (err) => {
+      console.error('Queue error:', err);
+    });
+  }
 
   async findAll(patientId?: number, doctor?: string): Promise<Appointment[]> {
     const filter: any = {};
@@ -27,25 +44,51 @@ export class AppointmentsService {
     return this.appointmentModel.findOne({ id }).exec();
   }
 
-  async create(
-    createAppointmentDto: CreateAppointmentDto,
-  ): Promise<Appointment> {
-    const nextId = await this.getNextSequence('appointmentId');
-    const createdAppointment = new this.appointmentModel({
-      id: nextId,
-      ...createAppointmentDto,
+  private parseCsv(buffer: Buffer): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      const results = [];
+      const stream = Readable.from(buffer.toString());
+      
+      stream
+        .pipe(csv())
+        .on('data', (data) => results.push(data))
+        .on('end', () => resolve(results))
+        .on('error', (error) => reject(error));
     });
-    return createdAppointment.save();
   }
 
-  private async getNextSequence(name: string): Promise<number> {
-    const result = await this.appointmentModel.db
-      .collection('counters')
-      .findOneAndUpdate(
-        { _id: name as any },
-        { $inc: { sequence_value: 1 } },
-        { returnDocument: 'after', upsert: true },
-      );
-    return result.sequence_value || 1;
+  async processAppointmentsFile(file: Express.Multer.File) {
+    if (!file?.buffer) throw new Error('Invalid file upload');
+
+    try {
+      // Parse CSV directly from buffer
+      const appointments = await this.parseCsv(file.buffer);
+
+      console.log('Attempting to add job to queue...');
+      const job = await this.appointmentsQueue.add('process-csv', {
+        appointments
+      }, {
+        attempts: 3,
+        removeOnComplete: true,
+      });
+
+      console.log('Job successfully added:', {
+        id: job.id,
+        timestamp: new Date().toISOString()
+      });
+  
+      return { 
+        jobId: job.id,
+        file: file.originalname,
+        records: appointments.length
+      };
+    } catch (error) {
+      console.error('Full error during processing:', {
+        error: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString()
+      });
+      throw error;
+    }
   }
 }

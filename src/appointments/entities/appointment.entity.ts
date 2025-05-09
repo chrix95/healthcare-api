@@ -24,14 +24,14 @@ export class Appointment extends Document {
     description: 'The ID of the patient associated with the appointment',
     example: 101,
   })
-  @Prop({ required: true, index: true })
+  @Prop({ required: true, type: Number })
   patient_id: number;
 
   @ApiProperty({
     description: 'The name of the doctor for the appointment',
     example: 'Dr. Smith',
   })
-  @Prop({ required: true, index: true })
+  @Prop({ required: true, type: String })
   doctor: string;
 
   @ApiProperty({

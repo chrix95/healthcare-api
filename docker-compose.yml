@@ -9,6 +9,8 @@ services:
       - NODE_ENV=development
       - MONGODB_URI=mongodb+srv://user-project-db:kL9ostNbdKLCSY9C@cluster0.7vxcs.mongodb.net
       - RABBITMQ_HOST=rabbitmq
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     develop:
       watch:
         - action: sync
@@ -21,6 +23,7 @@ services:
     depends_on:
       - mongo
       - rabbitmq
+      - redis
 
   mongo:
     image: mongo:6.0
@@ -42,6 +45,14 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
+  
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
 
 volumes:
   mongo-data:
+  redis-data:

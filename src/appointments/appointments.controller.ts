@@ -7,12 +7,16 @@ import {
   Query,
   HttpStatus,
   NotFoundException,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AppointmentResponseDto } from './dto/appointment-response.dto';
 import { PatientsService } from 'src/patients/patients.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerOptions } from '../config/multer.config';
 
 @ApiTags('appointments')
 @Controller('appointments')
@@ -21,20 +25,6 @@ export class AppointmentsController {
     private readonly appointmentsService: AppointmentsService,
     private readonly patientService: PatientsService,
   ) {}
-
-  @Post()
-  @ApiResponse({ status: HttpStatus.CREATED, type: AppointmentResponseDto })
-  async create(@Body() createAppointmentDto: CreateAppointmentDto) {
-    const patient = await this.patientService.findOne(
-      createAppointmentDto.patient_id,
-    );
-    if (!patient) {
-      throw new NotFoundException(
-        `Patient with id ${createAppointmentDto.patient_id} not found`,
-      );
-    }
-    return await this.appointmentsService.create(createAppointmentDto);
-  }
 
   @Get()
   @ApiQuery({ name: 'patient_id', required: false })
@@ -57,9 +47,23 @@ export class AppointmentsController {
     return appointment;
   }
 
-  // @Post('process-csv')
-  // async processCsv(@Body() body: { filepath: string }) {
-  //   await this.appointmentsService.processCsv(body.filepath);
-  //   return { message: 'CSV processing started' };
-  // }
+  @Post('')
+  @UseInterceptors(FileInterceptor('filepath', multerOptions))
+  async processAppointments(@UploadedFile() filepath: Express.Multer.File) {
+    try {
+      console.log('File received controller:', filepath);
+      if (!filepath) {
+        throw new Error('No file uploaded');
+      }
+      
+      const result = await this.appointmentsService.processAppointmentsFile(filepath);
+      return { 
+        message: 'Appointments processing started',
+        details: result
+      };
+    } catch (error) {
+      console.error('Error processing file:', error);
+      throw new Error('File processing failed');
+    }
+  }
 }

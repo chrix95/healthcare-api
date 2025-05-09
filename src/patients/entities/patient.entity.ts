@@ -71,6 +71,3 @@ PatientSchema.set('toJSON', {
     return ret;
   },
 });
-
-// Create index on patientId
-PatientSchema.index({ patientId: 1 }, { unique: true });
