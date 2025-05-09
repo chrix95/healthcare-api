@@ -16,7 +16,6 @@ export class AppointmentsProcessor {
     const { appointments } = job.data;
     
     try {
-      console.log('Processing CSV data:', appointments);
       // Get the next sequence value for appointments
       const nextId = await this.getNextSequence('appointmentId');
 
@@ -28,8 +27,6 @@ export class AppointmentsProcessor {
         appointment_date: new Date(appointment.appointment_date),
         reason: appointment.reason,
       }));
-
-      console.log('Formatted appointments:', formattedAppointments);
 
       // Insert into database
       await this.appointmentModel.insertMany(formattedAppointments);

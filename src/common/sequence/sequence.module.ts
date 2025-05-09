@@ -5,7 +5,7 @@ import { Counter, CounterSchema } from './counter.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'Counter', schema: CounterSchema }]),
+    MongooseModule.forFeature([{ name: Counter.name, schema: CounterSchema }]),
   ],
   providers: [SequenceService],
   exports: [SequenceService],

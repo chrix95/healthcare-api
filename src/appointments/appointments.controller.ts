@@ -11,7 +11,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
-import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AppointmentResponseDto } from './dto/appointment-response.dto';
 import { PatientsService } from 'src/patients/patients.service';
@@ -51,7 +50,6 @@ export class AppointmentsController {
   @UseInterceptors(FileInterceptor('filepath', multerOptions))
   async processAppointments(@UploadedFile() filepath: Express.Multer.File) {
     try {
-      console.log('File received controller:', filepath);
       if (!filepath) {
         throw new Error('No file uploaded');
       }

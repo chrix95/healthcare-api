@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Appointment } from './entities/appointment.entity';
-import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { Queue } from 'bull';
 import { InjectQueue } from '@nestjs/bull';
 import * as csv from 'csv-parser';
@@ -64,17 +63,11 @@ export class AppointmentsService {
       // Parse CSV directly from buffer
       const appointments = await this.parseCsv(file.buffer);
 
-      console.log('Attempting to add job to queue...');
       const job = await this.appointmentsQueue.add('process-csv', {
         appointments
       }, {
         attempts: 3,
         removeOnComplete: true,
-      });
-
-      console.log('Job successfully added:', {
-        id: job.id,
-        timestamp: new Date().toISOString()
       });
   
       return { 
