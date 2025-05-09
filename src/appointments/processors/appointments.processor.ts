@@ -3,12 +3,14 @@ import { Job } from 'bull';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Appointment } from '../entities/appointment.entity';
+import { SequenceService } from '../../common/sequence/sequence.service';
 
 @Processor('appointments')
 export class AppointmentsProcessor {
   constructor(
     @InjectModel(Appointment.name)
     private readonly appointmentModel: Model<Appointment>,
+    private readonly sequenceService: SequenceService,
   ) {}
 
   @Process('process-csv')
@@ -17,7 +19,7 @@ export class AppointmentsProcessor {
     
     try {
       // Get the next sequence value for appointments
-      const nextId = await this.getNextSequence('appointmentId');
+      const nextId = await this.sequenceService.getNextSequence('appointmentId');
 
       // Transform and validate appointments
       const formattedAppointments = appointments.map((appointment, index) => ({
@@ -32,7 +34,7 @@ export class AppointmentsProcessor {
       await this.appointmentModel.insertMany(formattedAppointments);
     
       // Update sequence counter
-      await this.updateSequence('appointmentId', nextId + appointments.length);
+      await this.sequenceService.updateSequence('appointmentId', nextId + appointments.length);
       
       return {
         success: true,
@@ -45,24 +47,4 @@ export class AppointmentsProcessor {
     }
   }
 
-  private async getNextSequence(name: string): Promise<number> {
-    const result = await this.appointmentModel.db
-      .collection('counters')
-      .findOneAndUpdate(
-        { _id: name as any },
-        { $inc: { sequence_value: 1 } },
-        { upsert: true, returnDocument: 'after' }
-      );
-    return result.sequence_value || 1;
-  }
-  
-  private async updateSequence(name: string, value: number): Promise<void> {
-    await this.appointmentModel.db
-      .collection('counters')
-      .updateOne(
-        { _id: name as any },
-        { $set: { sequence_value: value } },
-        { upsert: true }
-      );
-  }
 }

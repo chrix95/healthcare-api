@@ -16,4 +16,13 @@ export class SequenceService {
       .exec();
     return result.sequence_value;
   }
+
+  async updateSequence(name: string, value: number): Promise<void> {
+    await this.counterModel
+      .updateOne(
+        { _id: name as any },
+        { $set: { sequence_value: value } },
+        { upsert: true }
+      );
+  }
 }

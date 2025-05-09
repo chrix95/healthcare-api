@@ -13,7 +13,6 @@ import {
 import { AppointmentsService } from './appointments.service';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AppointmentResponseDto } from './dto/appointment-response.dto';
-import { PatientsService } from 'src/patients/patients.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from '../config/multer.config';
 
@@ -22,7 +21,6 @@ import { multerOptions } from '../config/multer.config';
 export class AppointmentsController {
   constructor(
     private readonly appointmentsService: AppointmentsService,
-    private readonly patientService: PatientsService,
   ) {}
 
   @Get()
