@@ -4,21 +4,14 @@ services:
   healthcare-api:
     build: .
     ports:
-      - "3000:3000"
+      - "${PORT}:${PORT}"
     environment:
-      - NODE_ENV=development
-      - MONGODB_URI=mongodb+srv://user-project-db:kL9ostNbdKLCSY9C@cluster0.7vxcs.mongodb.net
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-    develop:
-      watch:
-        - action: sync
-          path: ./
-          target: /src
-          ignore:
-            - node_modules/
-        - action: rebuild
-          path: package.json
+      - NODE_ENV=${NODE_ENV}
+      - MONGODB_URI=${MONGODB_URI}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+    env_file:
+      - .env
     depends_on:
       - mongo
       - redis
@@ -26,19 +19,23 @@ services:
   mongo:
     image: mongo:6.0
     ports:
-      - "27017:27017"
+      - "${MONGO_PORT}:27017"
     volumes:
       - mongo-data:/data/db
       - ./docker/mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
     environment:
-      - MONGO_INITDB_DATABASE=healthcare
-  
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
+    env_file:
+      - .env
+
   redis:
     image: redis:alpine
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     volumes:
       - redis-data:/data
+    env_file:
+      - .env
 
 volumes:
   mongo-data:
