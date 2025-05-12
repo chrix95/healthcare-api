@@ -34,6 +34,8 @@ $ yarn install
 
 ## Running the app
 
+Copy the `.env.example` file to `.env` and set the environment variables.
+
 ```bash
 # development
 $ yarn run start
