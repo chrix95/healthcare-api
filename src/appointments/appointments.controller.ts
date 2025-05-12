@@ -57,8 +57,7 @@ export class AppointmentsController {
         details: result
       };
     } catch (error) {
-      console.error('Error processing file:', error);
-      throw new Error('File processing failed');
+      throw new Error(error.message || 'File processing failed');
     }
   }
 }

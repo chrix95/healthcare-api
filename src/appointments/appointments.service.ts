@@ -76,11 +76,6 @@ export class AppointmentsService {
         records: appointments.length
       };
     } catch (error) {
-      console.error('Full error during processing:', {
-        error: error.message,
-        stack: error.stack,
-        timestamp: new Date().toISOString()
-      });
       throw error;
     }
   }
