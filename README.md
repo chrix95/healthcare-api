@@ -24,41 +24,44 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Fabric Healthcare API built on [Nest](https://github.com/nestjs/nest) framework TypeScript.
 
-## Installation
+## Pre-requisites
+- Node.js 18.x
+- Docker
 
-```bash
-$ yarn install
-```
 
-## Running the app
+## Setting up and Running the app
 
 Copy the `.env.example` file to `.env` and set the environment variables.
-
 ```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+MONGODB_URI=YOUR_MONGODB_URI
 ```
 
-## Running the app using Docker
-Start your docker application:
+To start the application using docker, ensure you docker application is running and then run the following commands:
 ```bash
 # development
-$ docker-compose up
+$ docker compose up
+````
+To start the application without docker, run the following commands:
+```bash
+# development
+$ yarn install
+$ yarn start:dev
+```
+To start the application in production mode, run the following commands:
+```bash
+# production
+$ yarn install
+$ yarn build
+$ yarn start:prod
 ```
 
 ## Test
 
 ```bash
 # unit tests
-$ yarn run test
+$ yarn run test (This will run all tests) - included in this project
 
 # e2e tests
 $ yarn run test:e2e
@@ -67,15 +70,36 @@ $ yarn run test:e2e
 $ yarn run test:cov
 ```
 
+## API Documentation
+The API documentation is generated using [Swagger](https://swagger.io/) and can be accessed at `http://localhost:3000/api` after starting the application.
+
+### Patient API Endpoints
+- `GET /patients` - Get all patients
+- `GET /patients/:id` - Get a single patient
+- `POST /patients` - Create a new patient
+```json
+{
+  "name": "Mike Doe",
+  "age": 19,
+  "gender": "male",
+  "contact": "+2348183780410"
+}
+```
+
+### Appointment API Endpoints
+- `GET /appointments` - Get all appointments
+- `GET /appointments/:id` - Get a single appointment
+- `POST /appointments` - Create a new appointment (using form-data)
+```json
+{
+  "filepath": `select the appointment file`,
+}
+```
+Request body should be in form-data format with the key `filepath` and the value as the file to be uploaded.
+
 ## Support
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
 
 ## License
 
