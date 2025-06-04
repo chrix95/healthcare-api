@@ -21,6 +21,9 @@ export class AppointmentsProcessor {
       // Get the next sequence value for appointments
       const nextId = await this.sequenceService.getNextSequence('appointmentId');
 
+      // Update sequence counter
+      await this.sequenceService.updateSequence('appointmentId', nextId + appointments.length);
+
       // Transform and validate appointments
       const formattedAppointments = appointments.map((appointment, index) => ({
         id: nextId + index, // Assign sequential IDs
@@ -32,9 +35,6 @@ export class AppointmentsProcessor {
 
       // Insert into database
       await this.appointmentModel.insertMany(formattedAppointments);
-    
-      // Update sequence counter
-      await this.sequenceService.updateSequence('appointmentId', nextId + appointments.length);
       
       return {
         success: true,
